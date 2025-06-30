@@ -28,12 +28,11 @@
         .card { background: var(--card-background); border-radius: 1rem; border: 1px solid var(--border-color); border-inline-start: 4px solid transparent; }
         .admin-post { border-inline-start-color: var(--primary-color); }
         .pinned-post { border-inline-start-color: #FBBF24; }
-        .reported-card { border: 1px solid #ef4444; border-inline-start: 4px solid #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
         #toast { 
             position: fixed; 
             bottom: 20px; 
             left: 50%;
-            transform: translateX(-50%) scale(0.95);
+            transform: translateX(-50%) scale(0.9);
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1000; 
@@ -109,7 +108,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, increment, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
@@ -126,7 +124,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const analytics = getAnalytics(app);
         
         const translations = {
             en: { pageTitle: "AccessPort - Your Gateway", subtitle: "Your gateway to digital accounts", adminModeActive: "Admin Mode Active!", exit: "Exit", navAccounts: "Accounts", navPublish: "Publish", publicListTitle: "Public Accounts List", searchPlaceholder: "Search for a game or service...", publishNewTitle: "Publish a New Account", serviceNameLabel: "Service Name", usernameLabel: "Username", usernamePlaceholder: "Username or Email", passwordLabel: "Password", passwordPlaceholder: "Account's password", publishNowButton: "Publish Now", totalAccounts: "Total Accounts Available:", noResults: "No results match your search criteria.", noAccounts: "The public list is empty. Publish an account to get started!", adminFilterButton: `Filter (Reports > 4)`, adminFilterAll: "Show All Accounts", publishSuccess: "Account published successfully!", adminEnterSuccess: "Admin mode activated successfully!", adminExitSuccess: "Exited admin mode.", adminLoginFail: "Admin login failed. Check credentials.", reportSuccess: "Thank you! Your report has been received.", reportFail: "You have already reported this account.", deleteSuccess: "Post deleted successfully.", copySuccess: "Copied!", copyFail: "Copy failed!", user: "User", pass: "Password", copyUser: "Copy User", copyPass: "Copy Password", report: "Report", postedOn: "Posted on:", pin: "Pin", unpin: "Unpin", delete: "Delete", verifiedTooltip: "Verified post by admin", pinnedTooltip: "Pinned post", reportWarning: "Warning: This account may not be working!" },
@@ -218,8 +215,7 @@
             let viewedAccountsLog = getFromStorage('viewed_accounts_log');
             if (viewedAccountsLog.includes(id)) return;
             try {
-                const docRef = doc(db, "accounts", id);
-                await updateDoc(docRef, { views: increment(1) });
+                await updateDoc(doc(db, "accounts", id), { views: increment(1) });
                 viewedAccountsLog.push(id);
                 saveToStorage('viewed_accounts_log', viewedAccountsLog);
             } catch(error) { console.error("Error incrementing view count:", error); }
@@ -350,7 +346,6 @@
                 if (!button) return;
                 const action = button.dataset.action;
                 const id = button.dataset.id;
-                if (!id) return;
                 if (action === 'togglePin') togglePin(id, button.dataset.pinned === 'true');
                 if (action === 'unpublish') unpublishAccount(id);
                 if (action === 'report') reportAccount(id);
